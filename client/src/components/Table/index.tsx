@@ -26,11 +26,14 @@ interface TableCellProps {
     className?: string;
 }
 
-const Table: FC<TableProps> = ({children, className}) => {
-    return <table className={`min-w-full${className}`}>
-        {children}
-    </table>;
+const Table: FC<TableProps> = ({ children, className }) => {
+    return (
+        <table className={`min-w-full ${className ?? ""}`}>
+            {children}
+        </table>
+    );
 };
+
 const TableHeader: FC<TableHeaderProps> = ({children, className}) => {
     return <thead className={className}>
         {children}
