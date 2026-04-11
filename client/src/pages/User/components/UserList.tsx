@@ -76,27 +76,27 @@ const UserList: FC<UserListProps> = ({onAddUser}) => {
                 </caption>
                 <TableHeader className="border-b border-gray-200 bg-blue-600 sticky top-0 text-white text-xs">
                     <TableRow> 
-                        <TableCell className="px-5 py-3 font-medium text-center">No.</TableCell>
-                        <TableCell className="px-5 py-3 font-medium text-center">First Name</TableCell>
-                        <TableCell className="px-5 py-3 font-medium text-center">Middle Name</TableCell>
-                        <TableCell className="px-5 py-3 font-medium text-center">Last Name</TableCell>
-                        <TableCell className="px-5 py-3 font-medium text-center">Suffix Name</TableCell>
-                        <TableCell className="px-5 py-3 font-medium text-center">Gender</TableCell>
-                        <TableCell className="px-5 py-3 font-medium text-center">Address</TableCell>
-                        <TableCell className="px-5 py-3 font-medium text-center">Actions</TableCell>
+                        <TableCell isHeader className="px-5 py-3 text-center">No.</TableCell>
+                        <TableCell isHeader className="px-5 py-3 text-center">First Name</TableCell>
+                        <TableCell isHeader className="px-5 py-3 text-center">Middle Name</TableCell>
+                        <TableCell isHeader className="px-5 py-3 text-center">Last Name</TableCell>
+                        <TableCell isHeader className="px-5 py-3 text-center">Suffix Name</TableCell>
+                        <TableCell isHeader className="px-5 py-3 text-center">Gender</TableCell>
+                        <TableCell isHeader className="px-5 py-3 text-center">Address</TableCell>
+                        <TableCell isHeader className="px-5 py-3 text-center w-40">Actions</TableCell>
                     </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-gray-100 text-gray-500 text-sm" >
                     {users.map((user, index) => (
                         <TableRow className="hover:bg-gray-100" key={index}>
-                            <TableCell className="px-4 py-3 text-center">{user.user_id}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">{user.first_name}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">{user.middle_name}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">{user.last_name}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">{user.suffix_name}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">{user.gender}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">{user.address}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">{user.action}</TableCell>
+                            <TableCell className="px-5 py-3 text-center">{user.user_id}</TableCell>
+                            <TableCell className="px-5 py-3 text-center">{user.first_name}</TableCell>
+                            <TableCell className="px-5 py-3 text-center">{user.middle_name}</TableCell>
+                            <TableCell className="px-5 py-3 text-center">{user.last_name}</TableCell>
+                            <TableCell className="px-5 py-3 text-center">{user.suffix_name}</TableCell>
+                            <TableCell className="px-5 py-3 text-center">{user.gender}</TableCell>
+                            <TableCell className="px-5 py-3 text-center">{user.address}</TableCell>
+                            <TableCell className="px-5 py-3 text-center w-40 flex justify-center gap-4">{user.action}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
