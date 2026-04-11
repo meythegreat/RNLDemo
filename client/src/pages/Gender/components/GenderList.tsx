@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../com
 import Spinner from "../../../components/Spinner/Spinner"
 import type { GenderColumns } from "../../../interfaces/GenderColumns"
 import GenderService from "../../../services/GenderService"
+import { Link } from "react-router-dom"
 
 interface GenderListProps {
     refreshKey: boolean;
@@ -43,13 +44,13 @@ const GenderList: FC<GenderListProps> = ({refreshKey}) => {
                             <TableRow> 
                                 <TableCell className="px-5 py-3 font-medium text-center">No.</TableCell>
                                 <TableCell className="px-5 py-3 font-medium text-start">Gender</TableCell>
-                                {/* <TableCell className="px-5 py-3 font-medium text-center">Actions</TableCell> */}
+                                <TableCell className="px-5 py-3 font-medium text-center">Actions</TableCell>
                             </TableRow>
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-100 text-gray-500 text-sm" >
                             {loadingGenders ? (
                                 <TableRow>
-                                    <TableCell colSpan={2} className="px-5 py-3 text-center">
+                                    <TableCell colSpan={3} className="px-5 py-3 text-center">
                                         <Spinner size="md" />
                                     </TableCell>
                                 </TableRow>
@@ -57,6 +58,12 @@ const GenderList: FC<GenderListProps> = ({refreshKey}) => {
                                 <TableRow className="hover:bg-gray-100" key={index}>
                                     <TableCell className="px-5 py-3 text-center">{index + 1}</TableCell>
                                     <TableCell className="px-5 py-3 text-start">{gender.gender}</TableCell>
+                                    <TableCell className="px-5 py-3 text-center">
+                                        <div className="flex justify-center items-center gap-4">
+                                            <Link to={`/gender/edit/${gender.gender_id}`} className="text-green-600 font-medium hover:underline">Edit</Link>
+                                            <Link to={`/gender/delete/${gender.gender_id}`} className="text-red-600 font-medium hover:underline">Delete</Link>
+                                        </div>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
