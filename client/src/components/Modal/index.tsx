@@ -47,7 +47,7 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose, className, children, showClose
 
     return (
         <>
-        <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999 p-4">
+        <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-999999 p-4">
             {!isFullScreen && (
                 <div className="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-lg" />
             )}

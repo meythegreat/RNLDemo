@@ -19,6 +19,6 @@ export const useToastMessage = (initialMessage: string, initialIsVisible: boolea
     }, [])
 
     return {
-        message, isVisible, showToastMessage, closeToastMessage, toggleToastMessage
+        message, isVisible, showToastMessage, closeToastMessage
     }
 }
