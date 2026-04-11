@@ -19,7 +19,7 @@ class UserController extends Controller
             'birth_date' => ['required', 'date'],
             'username' => ['required', 'min:6', 'max:12', Rule::unique('tbl_users', 'username')],
             'password' => ['required', 'min:6', 'max:12', 'confirmed'],
-            'password_confirmation' => ['required', 'min:6', 'max-12']
+            'password_confirmation' => ['required', 'min:6', 'max:12']
         ]);
 
         $age = date_diff(date_create($validated['birth_date']), date_create('now'))->y;

@@ -1,9 +1,11 @@
 import { useEffect, useState, type FC, type FormEvent } from "react";
+import { isAxiosError } from "axios";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 import Modal from "../../../components/Modal";
 import FloatingLabelSelect from "../../../components/Select/FloatingLabelSelect";
 import SubmitButton from "../../../components/Button/SubmitButton";
 import CloseButton from "../../../components/Button/CloseButton";
+import ToastMessage from "../../../components/ToastMessage/ToastMessage";
 import type { GenderColumns } from "../../../interfaces/GenderColumns";
 import GenderService from "../../../services/GenderService";
 import type { UserFieldErrors } from "../../../interfaces/UserFieldErrors";
@@ -11,11 +13,21 @@ import UserService from "../../../services/UserService";
 
 interface AddUserFormModalProps {
     onUserAdded: (message: string) => void;
+    toastMessage: string;
+    toastMessageIsVisible: boolean;
+    onCloseToastMessage: () => void;
     isOpen: boolean;
     onClose: () => void;
 }
 
-const AddUserFormModal: FC<AddUserFormModalProps> = ({onUserAdded, isOpen, onClose}) => {
+const AddUserFormModal: FC<AddUserFormModalProps> = ({
+    onUserAdded,
+    toastMessage,
+    toastMessageIsVisible,
+    onCloseToastMessage,
+    isOpen,
+    onClose,
+}) => {
     const [loadingGenders, setLoadingGenders] = useState(false);
     const [genders, setGenders] = useState<GenderColumns[]>([]);
 
@@ -67,9 +79,9 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({onUserAdded, isOpen, onClo
             } else {
                 console.error('Unexpected status error occurred during adding user: ', res.status)
             }
-        } catch(error: any) {
-            if(error.response && error.response.status === 422) {
-                setErrors(error.response.data.errors)
+        } catch(error: unknown) {
+            if(isAxiosError(error) && error.response?.status === 422) {
+                setErrors(error.response.data.errors as UserFieldErrors)
             } else {
                 console.log('Unexpected server error occurred during adding user: ', error)
             }
@@ -103,7 +115,12 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({onUserAdded, isOpen, onClo
   return (
     <>
     <Modal isOpen={isOpen} onClose={onClose} showCloseButton>
-        <form onSubmit={handleStoreUser}>
+        <form className="relative" onSubmit={handleStoreUser}>
+            <ToastMessage
+                message={toastMessage}
+                isVisible={toastMessageIsVisible}
+                onClose={onCloseToastMessage}
+            />
             <h1 className="text-2xl border-b border-gray-200 p-4 font-semibold mb-4 text-gray-800">
                 Add User
             </h1>
@@ -145,7 +162,7 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({onUserAdded, isOpen, onClo
                         <FloatingLabelInput label="Password" type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} errors={errors.password} required />
                     </div>
                     <div className="mb-4">
-                        <FloatingLabelInput label="Confirm Password" type="password" name="confirm_password" value={passwordConfirmation} onChange={(e) => setPasswordConfirmation(e.target.value)} errors={errors.password_confirmation} required />
+                        <FloatingLabelInput label="Confirm Password" type="password" name="password_confirmation" value={passwordConfirmation} onChange={(e) => setPasswordConfirmation(e.target.value)} errors={errors.password_confirmation} required />
                     </div>
                 </div>
             </div>
