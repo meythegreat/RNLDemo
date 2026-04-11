@@ -4,20 +4,17 @@ import SubmitButton from "../../../components/Button/SubmitButton";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 import type { GenderFieldErrors } from "../../../interfaces/GenderFieldErrors";
 import GenderService from "../../../services/GenderService";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Spinner from "../../../components/Spinner/Spinner";
 
-interface EditGenderFormProps {
-  onGenderUpdated: (message: string) => void
-}
-
-const EditGenderForm: FC<EditGenderFormProps> = ({onGenderUpdated}) => {
+const EditGenderForm: FC = () => {
   const [loadingGet, setLoadingGet] = useState(false)
   const [loadingUpdate, setLoadingUpdate] = useState(false)
   const [gender, setGender] = useState('')
   const [errors, setErrors] = useState<GenderFieldErrors>({})
 
   const {gender_id} = useParams()
+  const navigate = useNavigate()
 
   const handleGetGender = async (genderId: string | number) => {
     try {
@@ -45,8 +42,7 @@ const EditGenderForm: FC<EditGenderFormProps> = ({onGenderUpdated}) => {
 
       if(res.status === 200) {
         setErrors({})
-        setGender(res.data.gender.gender)
-        onGenderUpdated(res.data.message)
+        navigate('/', {state: {message: res.data.message}})
       } else {
         console.error('Unexpected status error occurred during updating of gender: ', res.status)
       }
