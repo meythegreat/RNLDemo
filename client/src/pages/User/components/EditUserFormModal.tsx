@@ -1,39 +1,29 @@
 import { useEffect, useState, type FC, type FormEvent } from "react";
-import { isAxiosError } from "axios";
+import CloseButton from "../../../components/Button/CloseButton";
+import SubmitButton from "../../../components/Button/SubmitButton";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 import Modal from "../../../components/Modal";
 import FloatingLabelSelect from "../../../components/Select/FloatingLabelSelect";
-import SubmitButton from "../../../components/Button/SubmitButton";
-import CloseButton from "../../../components/Button/CloseButton";
-import ToastMessage from "../../../components/ToastMessage/ToastMessage";
+import type { UserColumns } from "../../../interfaces/UserColumns";
 import type { GenderColumns } from "../../../interfaces/GenderColumns";
-import GenderService from "../../../services/GenderService";
 import type { UserFieldErrors } from "../../../interfaces/UserFieldErrors";
+import GenderService from "../../../services/GenderService";
 import UserService from "../../../services/UserService";
 
-interface AddUserFormModalProps {
-    onUserAdded: (message: string) => void;
-    toastMessage: string;
-    toastMessageIsVisible: boolean;
-    onCloseToastMessage: () => void;
-    isOpen: boolean;
-    onClose: () => void;
-    refreshKey: () => void;
+interface EditUserFormModalProps {
+    user: UserColumns | null
+    onUserUpdated: (message: string) => void
+    refreshKey: () => void
+    isOpen: boolean
+    onClose: () => void
 }
 
-const AddUserFormModal: FC<AddUserFormModalProps> = ({
-    onUserAdded,
-    toastMessage,
-    toastMessageIsVisible,
-    onCloseToastMessage,
-    isOpen,
-    onClose,
-    refreshKey,
-}) => {
+const EditUserFormModal: FC<EditUserFormModalProps> = ({user, onUserUpdated, refreshKey, isOpen, onClose}) => {
+
     const [loadingGenders, setLoadingGenders] = useState(false);
     const [genders, setGenders] = useState<GenderColumns[]>([]);
 
-    const [loadingStore, setLoadingStore] = useState(false);
+    const [loadingUpdate, setLoadingUpdate] = useState(false);
     const [firstName, setFirstName] = useState('');
     const [middleName, setMiddleName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -41,15 +31,13 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
     const [gender, setGender] = useState('');
     const [birthDate, setBirthDate] = useState('');
     const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [passwordConfirmation, setPasswordConfirmation] = useState('');
     const [errors, setErrors] = useState<UserFieldErrors>({});
 
-    const handleStoreUser = async (e: FormEvent) => {
+    const handleUpdateUser = async (e: FormEvent) => {
         try {
             e.preventDefault()
 
-            setLoadingStore(true)
+            setLoadingUpdate(true)
 
             const payload = {
                 first_name: firstName,
@@ -59,39 +47,35 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
                 gender: gender,
                 birth_date: birthDate,
                 username: username,
-                password: password,
-                password_confirmation: passwordConfirmation,
-            }
+            };
 
-            const res = await UserService.storeUser(payload)
+            const res = await UserService.updateUser(user?.user_id!, payload)
 
             if(res.status === 200) {
-                onUserAdded(res.data.message);
-                refreshKey();
-
-                setFirstName('');
-                setMiddleName('');
-                setLastName('');
-                setSuffixName('');
-                setGender('');
-                setBirthDate('');
-                setUsername('');
-                setPassword('');
-                setPasswordConfirmation('');
+                setFirstName(res.data.user.first_name);
+                setMiddleName(res.data.user.middle_name ?? '');
+                setLastName(res.data.user.last_name);
+                setSuffixName(res.data.user.suffix_name ?? '');
+                setGender(res.data.user.gender_id);
+                setBirthDate(res.data.user.birth_date);
+                setUsername(res.data.user.username);
                 setErrors({});
 
+                onUserUpdated(res.data.message);
                 handleLoadGenders();
+                refreshKey();
             } else {
-                console.error('Unexpected status error occurred during adding user: ', res.status)
+                console.error('Unexpected status error occurred during updating user: ', res.status)
             }
-        } catch(error: unknown) {
-            if(isAxiosError(error) && error.response?.status === 422) {
-                setErrors(error.response.data.errors as UserFieldErrors)
+
+        } catch(error: any) {
+            if(error.response && error.response.status === 422) {
+                setErrors(error.response.data.errors)
             } else {
-                console.log('Unexpected server error occurred during adding user: ', error)
+                console.error('Unexpected server error occurred during updating user: ', error)
             }
         } finally {
-            setLoadingStore(false)
+            setLoadingUpdate(false); 
         }
     }
 
@@ -119,17 +103,26 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        if(user) {
+            setFirstName(user.first_name);
+            setMiddleName(user.middle_name ?? '');
+            setLastName(user.last_name);
+            setSuffixName(user.suffix_name ?? '');
+            setGender(user.gender.gender_id.toString());
+            setBirthDate(user.birth_date);
+            setUsername(user.username);
+        } else {
+            console.error('Unexpected user error occurred during fetching user details: ', user)
+        }
+    }, [user]);
+
   return (
     <>
-    <Modal isOpen={isOpen} onClose={onClose} showCloseButton>
-        <form className="relative" onSubmit={handleStoreUser}>
-            <ToastMessage
-                message={toastMessage}
-                isVisible={toastMessageIsVisible}
-                onClose={onCloseToastMessage}
-            />
+       <Modal isOpen={isOpen} onClose={onClose} showCloseButton>
+        <form onSubmit={handleUpdateUser}>
             <h1 className="text-2xl border-b border-gray-200 p-4 font-semibold mb-4 text-gray-800">
-                Add User
+                Edit User
             </h1>
             
             <div className="grid grid-cols-2 gap-4 border-b border-gray-200 mb-4 px-4 pb-2">
@@ -178,25 +171,19 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
                     <div className="mb-4">
                         <FloatingLabelInput label="Username" type="text" name="username" value={username} onChange={(e) => setUsername(e.target.value)} errors={errors.username} required />
                     </div>
-                    <div className="mb-4">
-                        <FloatingLabelInput label="Password" type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} errors={errors.password} required />
-                    </div>
-                    <div className="mb-4">
-                        <FloatingLabelInput label="Confirm Password" type="password" name="password_confirmation" value={passwordConfirmation} onChange={(e) => setPasswordConfirmation(e.target.value)} errors={errors.password_confirmation} required />
-                    </div>
                 </div>
             </div>
             
             <div className="flex justify-end gap-2 px-4 pb-4">
-                {!loadingStore && (
+                {!loadingUpdate && (
                 <CloseButton label="Close" onClose={onClose}/>
                 )}
-                <SubmitButton label="Save User" loading={loadingStore} loadingLabel="Saving user..." />
+                <SubmitButton label="Update User" loading={loadingUpdate} loadingLabel="Updating user..." />
             </div>
         </form>
     </Modal>
     </>
-  )
-}
+  );
+};
 
-export default AddUserFormModal;
+export default EditUserFormModal;
