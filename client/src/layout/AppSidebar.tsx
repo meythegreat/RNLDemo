@@ -6,18 +6,17 @@ const AppSidebar = () => {
 
    const sidebarItems = [
       {
-         path: "#",
-         text: "Gender List",
+         path: "/",
+         text: "Genders",
       },
       {
-         path: "#", 
-         text: "User List",
+         path: "/users", 
+         text: "Users",
       },
    ]
 
   return (
     <>
-    {/* Fixed: Backdrop should show when isOpen is true */}
     {isOpen && (
       <div className="fixed inset-0 z-30 blur-lg sm:hidden bg-gray-900/50" onClick={toggleSidebar}/>
     )}

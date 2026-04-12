@@ -64,18 +64,20 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
             const res = await UserService.storeUser(payload)
 
             if(res.status === 200) {
-                onUserAdded(res.data.message)
+                onUserAdded(res.data.message);
 
-                setFirstName('')
-                setMiddleName('')
-                setLastName('')
-                setSuffixName('')
-                setGender('')
-                setBirthDate('')
-                setUsername('')
-                setPassword('')
-                setPasswordConfirmation('')
-                setErrors({})
+                setFirstName('');
+                setMiddleName('');
+                setLastName('');
+                setSuffixName('');
+                setGender('');
+                setBirthDate('');
+                setUsername('');
+                setPassword('');
+                setPasswordConfirmation('');
+                setErrors({});
+
+                handleLoadGenders();
             } else {
                 console.error('Unexpected status error occurred during adding user: ', res.status)
             }
@@ -109,8 +111,10 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
     };
 
     useEffect(() => {
-        handleLoadGenders()
-    }, [])
+        if(isOpen) {
+            handleLoadGenders();
+        }
+    }, [isOpen]);
 
   return (
     <>
@@ -140,13 +144,26 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
                         <FloatingLabelInput label="Suffix Name" type="text" name="suffix_name" value={suffixName} onChange={(e) => setSuffixName(e.target.value)} errors={errors.suffix_name} />
                     </div>
                     <div className="mb-4">
-                        <FloatingLabelSelect label="Gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} errors={errors.gender} required>
-                            <option value="">Select Gender...</option>
-                            {loadingGenders ? (
-                                <option value="">Loading...</option>
-                            ) : genders.map((gender, index) => (
-                                <option value={gender.gender_id} key={index}>{gender.gender}</option>
+                        <FloatingLabelSelect
+                        label="Gender"
+                        name="gender"
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        required
+                        errors={errors.gender}
+                        >
+                        {loadingGenders ? (
+                            <option value="">Loading...</option>
+                        ) : (
+                            <>
+                            <option value="">Select Gender</option>
+                            {genders.map((gender, index) => (
+                                <option value={gender.gender_id} key={index}>
+                                {gender.gender}
+                                </option>
                             ))}
+                            </>
+                        )}
                         </FloatingLabelSelect>
                     </div>
                 </div>
