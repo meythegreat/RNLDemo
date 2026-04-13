@@ -6,6 +6,7 @@ use App\Models\Gender;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -39,7 +40,7 @@ class DatabaseSeeder extends Seeder
             'birth_date' => $birthDate,
             'age' => $age,
             'username' => 'johndoe',
-            'password' => 'johndoe'
+            'password' => Hash::make('johndoe')
         ]);
     }
 }

@@ -66,4 +66,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Gender::class, 'gender_id', 'gender_id');
     }
+
+    public function getAuthIdentifierName()
+    {
+        return 'username';
+    }
 }
