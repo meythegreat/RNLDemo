@@ -1,4 +1,3 @@
-import ToastMessage from "../../components/ToastMessage/ToastMessage";
 import { useModal } from "../../hooks/useModal";
 import { useRefresh } from "../../hooks/useRefresh";
 import { useToastMessage } from "../../hooks/useToastMessage";
@@ -20,11 +19,6 @@ const UserMainPage = () => {
 
   return (
     <>
-        <ToastMessage 
-          message={toastMessage}
-          isVisible={toastMessageIsVisible}
-          onClose={closeToastMessage}
-        />
         <AddUserFormModal
             onUserAdded={showToastMessage}
             toastMessage={toastMessage}
