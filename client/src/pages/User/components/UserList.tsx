@@ -1,16 +1,17 @@
 import { useEffect, useState, type FC } from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/Table";
-import type { UserColumns } from "../../../interfaces/UserColumns";
 import UserService from "../../../services/UserService";
 import Spinner from "../../../components/Spinner/Spinner";
+import type { UserColumns } from "../../../interfaces/UserInterface";
 
 interface UserListProps {
     onAddUser: () => void;
     onEditUser: (user: UserColumns | null) => void;
+    onDeleteUser: (user: UserColumns | null) => void;
     refreshKey: boolean;
 }
 
-const UserList: FC<UserListProps> = ({onAddUser, onEditUser, refreshKey}) => {
+const UserList: FC<UserListProps> = ({onAddUser, onEditUser, onDeleteUser, refreshKey}) => {
     const [loadingUsers, setLoadingUsers] = useState(false)
     const [users, setUsers] = useState<UserColumns[]>([])
 
@@ -108,7 +109,7 @@ const UserList: FC<UserListProps> = ({onAddUser, onEditUser, refreshKey}) => {
                                 <TableCell className="px-5 py-3 text-center">
                                     <div className="flex gap-4">
                                         <button type="button" className="text-green-600 font-medium cursor-pointer hover:underline" onClick={() => onEditUser(user)}>Edit</button>
-                                        <button type="button" className="text-red-600 font-medium cursor-pointer hover:underline">Delete</button>
+                                        <button type="button" className="text-red-600 font-medium cursor-pointer hover:underline" onClick={() => onDeleteUser(user)}>Delete</button>
                                     </div>
                                 </TableCell>
                             </TableRow>

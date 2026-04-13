@@ -2,10 +2,10 @@ import { useEffect, useState, type FC, type FormEvent } from "react";
 import BackButton from "../../../components/Button/BackButton";
 import SubmitButton from "../../../components/Button/SubmitButton";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
-import type { GenderFieldErrors } from "../../../interfaces/GenderFieldErrors";
 import GenderService from "../../../services/GenderService";
 import { useNavigate, useParams } from "react-router-dom";
 import Spinner from "../../../components/Spinner/Spinner";
+import type { GenderFieldErrors } from "../../../interfaces/GenderInterface";
 
 const EditGenderForm: FC = () => {
   const [loadingGet, setLoadingGet] = useState(false)
