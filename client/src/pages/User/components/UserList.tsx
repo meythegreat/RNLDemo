@@ -103,7 +103,7 @@ const UserList: FC<UserListProps> = ({onAddUser, onEditUser, onDeleteUser, refre
         observer.observe(target);
 
         return () => observer.disconnect();
-    }, [handleLoadUsers, hasMore, loadingUsers, search, usersTableCurrentPage, users.length]);
+    }, [debouncedSearch, handleLoadUsers, hasMore, loadingUsers, usersTableCurrentPage, users.length]);
 
     useEffect(() => {
         const timer = setTimeout(() => {

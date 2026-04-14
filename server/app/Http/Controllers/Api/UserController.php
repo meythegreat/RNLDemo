@@ -11,8 +11,10 @@ class UserController extends Controller
 {
     public function loadUsers(Request $request) {
         $search = trim((string) $request->input('search', ''));
+        $searchTerms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY);
 
         $users = User::with(['gender'])
+            ->select('tbl_users.*')
             ->leftJoin('tbl_genders', 'tbl_users.gender_id', '=', 'tbl_genders.gender_id')
             ->where('tbl_users.is_deleted', false)
             ->orderBy('tbl_users.last_name', 'asc')
@@ -20,14 +22,24 @@ class UserController extends Controller
             ->orderBy('tbl_users.middle_name', 'asc')
             ->orderBy('tbl_users.suffix_name', 'asc');
 
-            if($search) {
-                $users->where(function ($user) use ($search) {
-                    $user->where('tbl_users.first_name', 'like', "%{$search}%")
-                        ->orWhere('tbl_users.middle_name', 'like', "%{$search}%")
-                        ->orWhere('tbl_users.last_name', 'like', "%{$search}%")
-                        ->orWhere('tbl_users.suffix_name', 'like', "%{$search}%")
-                        ->orWhere('tbl_users.username', 'like', "%{$search}%")
-                        ->orWhere('tbl_genders.gender', 'like', "%{$search}%");
+            if(!empty($searchTerms)) {
+                $users->where(function ($user) use ($search, $searchTerms) {
+                    $user->whereRaw(
+                        "TRIM(CONCAT_WS(' ', tbl_users.first_name, tbl_users.middle_name, tbl_users.last_name, tbl_users.suffix_name)) like ?",
+                        ["%{$search}%"]
+                    )->orWhereRaw(
+                        "TRIM(CONCAT_WS(' ', tbl_users.last_name, tbl_users.first_name, tbl_users.middle_name, tbl_users.suffix_name)) like ?",
+                        ["%{$search}%"]
+                    )->orWhere('tbl_genders.gender', 'like', "%{$search}%");
+
+                    foreach($searchTerms as $term) {
+                        $user->orWhere(function ($termQuery) use ($term) {
+                            $termQuery->where('tbl_users.first_name', 'like', "{$term}%")
+                                ->orWhere('tbl_users.middle_name', 'like', "{$term}%")
+                                ->orWhere('tbl_users.last_name', 'like', "{$term}%")
+                                ->orWhere('tbl_users.suffix_name', 'like', "{$term}%");
+                        });
+                    }
                 });
             }
 
