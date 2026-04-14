@@ -1,10 +1,55 @@
+import { useEffect, useState, type FormEvent } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import { useHeader } from "../contexts/HeaderContext";
 import { useSidebar } from "../contexts/SidebarContext";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const AppHeader = () => {
   const {isOpen, toggleUserMenu} = useHeader()
   const {toggleSidebar} = useSidebar()
+  const {user, logout} = useAuth()
+  const navigate = useNavigate()
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogout = async (e: FormEvent) => {
+    try {
+      e.preventDefault()
+
+      setIsLoading(true)
+
+      await logout()
+
+      navigate('/')
+      
+    } catch(error) {
+      console.error('Unexpected error occurred while logging out: ', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleUserFullNameFormat = () => {
+    if(!user) return ""
+
+    let fullName = `${user.user.last_name}, ${user.user.first_name}`
+
+    if(user.user.middle_name) {
+      fullName += ` ${user.user.middle_name.charAt(0)}.`
+    }
+
+    if(user.user.suffix_name) {
+      fullName += `, ${user.user.suffix_name}`
+    }
+
+    return fullName
+  }
+
+  useEffect(() => {
+    if(user) {
+      handleUserFullNameFormat()
+    }
+  }, [user])
 
   return (
     <>
@@ -39,15 +84,20 @@ const AppHeader = () => {
                 <div className={`absolute right-8 top-9 min-w-50 z-50 ${isOpen ? 'block' : 'hidden'} bg-gray-800 border border-gray-600 rounded-base shadow-lg w-44`} id="dropdown-user">
                   <div className="px-4 py-3 border-b border-gray-600" role="none">
                     <p className="text-sm font-medium text-white" role="none">
-                      Neil Sims
-                    </p>
-                    <p className="text-sm text-gray-300 truncate" role="none">
-                      neil.sims@flowbite.com
+                      {handleUserFullNameFormat()}
                     </p>
                   </div>
                   <ul className="p-2 text-sm text-gray-300 font-medium" role="none">
                     <li>
-                      <Link to="#" className="inline-flex items-center w-full p-2 hover:bg-gray-700 hover:text-white rounded" role="menuitem">Sign out</Link>
+                      <button
+                        type="submit"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white w-full text-start cursor-pointer disabled:cursor-not-allowed"
+                        role="menuitem"
+                        onClick={handleLogout}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Signing Out..." : "Sign Out"}
+                      </button>
                     </li>
                   </ul>
                 </div>

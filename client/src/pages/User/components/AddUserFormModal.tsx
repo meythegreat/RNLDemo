@@ -5,17 +5,15 @@ import Modal from "../../../components/Modal";
 import FloatingLabelSelect from "../../../components/Select/FloatingLabelSelect";
 import SubmitButton from "../../../components/Button/SubmitButton";
 import CloseButton from "../../../components/Button/CloseButton";
-import ToastMessage from "../../../components/ToastMessage/ToastMessage";
 import GenderService from "../../../services/GenderService";
 import UserService from "../../../services/UserService";
 import type { UserFieldErrors } from "../../../interfaces/UserInterface";
 import type { GenderColumns } from "../../../interfaces/GenderInterface";
+import ToastMessage from "../../../components/ToastMessage/ToastMessage";
+import { useToastMessage } from "../../../hooks/useToastMessage";
 
 interface AddUserFormModalProps {
-    onUserAdded: (message: string) => void;
-    toastMessage: string;
-    toastMessageIsVisible: boolean;
-    onCloseToastMessage: () => void;
+    onUserAdded?: (message: string, failed?: boolean) => void;
     isOpen: boolean;
     onClose: () => void;
     refreshKey: () => void;
@@ -23,15 +21,19 @@ interface AddUserFormModalProps {
 
 const AddUserFormModal: FC<AddUserFormModalProps> = ({
     onUserAdded,
-    toastMessage,
-    toastMessageIsVisible,
-    onCloseToastMessage,
     isOpen,
     onClose,
     refreshKey,
 }) => {
     const [loadingGenders, setLoadingGenders] = useState(false);
     const [genders, setGenders] = useState<GenderColumns[]>([]);
+
+    const {
+        message,
+        isVisible,
+        showToastMessage,
+        closeToastMessage
+    } = useToastMessage('', false);
 
     const [loadingStore, setLoadingStore] = useState(false);
     const [firstName, setFirstName] = useState('');
@@ -66,7 +68,8 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
             const res = await UserService.storeUser(payload)
 
             if(res.status === 200) {
-                onUserAdded(res.data.message);
+                showToastMessage(res.data.message);
+                onUserAdded?.(res.data.message);
                 refreshKey();
 
                 setFirstName('');
@@ -122,12 +125,12 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
   return (
     <>
     <Modal isOpen={isOpen} onClose={onClose} showCloseButton>
-        <form className="relative" onSubmit={handleStoreUser}>
-            <ToastMessage
-                message={toastMessage}
-                isVisible={toastMessageIsVisible}
-                onClose={onCloseToastMessage}
-            />
+        <ToastMessage
+        message={message}
+        isVisible={isVisible}
+        onClose={closeToastMessage}
+        />
+        <form onSubmit={handleStoreUser}>
             <h1 className="text-2xl border-b border-gray-200 p-4 font-semibold mb-4 text-gray-800">
                 Add User
             </h1>

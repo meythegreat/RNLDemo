@@ -9,7 +9,7 @@ import { useLocation } from "react-router-dom";
 const GenderMainPage = () => {
     const location = useLocation()
     
-    const {message: toastMessage, isVisible: toastMessageIsVisible, showToastMessage, closeToastMessage} = useToastMessage("", false)
+    const {message: toastMessage, isVisible: toastMessageIsVisible, showToastMessage, closeToastMessage} = useToastMessage("", false, false)
 
     const {refresh, handleRefresh} = useRefresh(false);
 

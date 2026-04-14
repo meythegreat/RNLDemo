@@ -8,19 +8,34 @@ import GenderService from "../../../services/GenderService";
 import UserService from "../../../services/UserService";
 import type { UserColumns, UserFieldErrors } from "../../../interfaces/UserInterface";
 import type { GenderColumns } from "../../../interfaces/GenderInterface";
+import { useToastMessage } from "../../../hooks/useToastMessage";
+import ToastMessage from "../../../components/ToastMessage/ToastMessage";
 
 interface EditUserFormModalProps {
     user: UserColumns | null
-    onUserUpdated: (message: string) => void
+    onUserUpdated?: (message: string, failed?: boolean) => void
     refreshKey: () => void
     isOpen: boolean
     onClose: () => void
 }
 
-const EditUserFormModal: FC<EditUserFormModalProps> = ({user, onUserUpdated, refreshKey, isOpen, onClose}) => {
+const EditUserFormModal: FC<EditUserFormModalProps> = ({
+    user,
+    onUserUpdated,
+    refreshKey,
+    isOpen,
+    onClose
+}) => {
 
     const [loadingGenders, setLoadingGenders] = useState(false);
     const [genders, setGenders] = useState<GenderColumns[]>([]);
+
+    const {
+        message,
+        isVisible,
+        showToastMessage,
+        closeToastMessage
+    } = useToastMessage('', false);
 
     const [loadingUpdate, setLoadingUpdate] = useState(false);
     const [firstName, setFirstName] = useState('');
@@ -60,7 +75,8 @@ const EditUserFormModal: FC<EditUserFormModalProps> = ({user, onUserUpdated, ref
                 setUsername(res.data.user.username);
                 setErrors({});
 
-                onUserUpdated(res.data.message);
+                showToastMessage(res.data.message);
+                onUserUpdated?.(res.data.message);
                 handleLoadGenders();
                 refreshKey();
             } else {
@@ -121,6 +137,12 @@ const EditUserFormModal: FC<EditUserFormModalProps> = ({user, onUserUpdated, ref
   return (
     <>
        <Modal isOpen={isOpen} onClose={onClose} showCloseButton>
+        <ToastMessage
+        message={message}
+        isVisible={isVisible}
+        onClose={closeToastMessage}
+        />
+
         <form onSubmit={handleUpdateUser}>
             <h1 className="text-2xl border-b border-gray-200 p-4 font-semibold mb-4 text-gray-800">
                 Edit User

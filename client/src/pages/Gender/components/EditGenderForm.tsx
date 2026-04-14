@@ -42,7 +42,7 @@ const EditGenderForm: FC = () => {
 
       if(res.status === 200) {
         setErrors({})
-        navigate('/', {state: {message: res.data.message}})
+        navigate('/genders', {state: {message: res.data.message}})
       } else {
         console.error('Unexpected status error occurred during updating of gender: ', res.status)
       }
@@ -79,7 +79,7 @@ const EditGenderForm: FC = () => {
           </div>
           <div className="flex justify-end gap-3">
             {!loadingUpdate && (
-              <BackButton label="Back" path="/" />
+              <BackButton label="Back" path="/genders" />
             )}
               <SubmitButton label="Update Gender" loading={loadingUpdate} loadingLabel="Updating gender..."/>
           </div>

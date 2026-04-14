@@ -5,6 +5,7 @@ interface ToastMessageProps {
   isFailed?: boolean;
   isVisible: boolean;
   onClose: () => void;
+  className?: string;
 }
 
 const ToastMessage: FC<ToastMessageProps> = ({
@@ -12,6 +13,7 @@ const ToastMessage: FC<ToastMessageProps> = ({
   isFailed,
   isVisible,
   onClose,
+  className,
 }) => {
   useEffect(() => {
     if (isVisible) {
@@ -26,7 +28,7 @@ const ToastMessage: FC<ToastMessageProps> = ({
   return (
     <>
       <div
-        className={`absolute top-2 right-2 z-1000000 flex items-center w-full max-w-xs p-4 mb-4 text-black ${
+        className={`${className ?? "absolute top-2 right-2"} z-[1100] flex items-center w-full max-w-xs p-4 mb-4 text-black ${
           isFailed ? "bg-red-100" : "bg-green-100"
         } rounded-lg shadow-lg transition-opacity duration-300 ${
           isVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"

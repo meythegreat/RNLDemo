@@ -1,9 +1,14 @@
 import AxiosInstance from "./AxiosInstance";
 
 const UserService = {
-    loadUsers: async () => {
+    loadUsers: async (page: number, search: string) => {
         try {
-            const response = await AxiosInstance.get('/user/loadUsers')
+            const response = await AxiosInstance.get('/user/loadUsers', {
+                params: {
+                    page,
+                    search: search || undefined,
+                }
+            });
             return response
         } catch(error) {
             throw error;

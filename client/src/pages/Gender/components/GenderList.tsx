@@ -1,7 +1,7 @@
 import { useEffect, useState, type FC } from "react"
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/Table"
 import Spinner from "../../../components/Spinner/Spinner"
-import type { GenderColumns } from "../../../interfaces/GenderColumns"
+import type { GenderColumns } from "../../../interfaces/GenderInterface"
 import GenderService from "../../../services/GenderService"
 import { Link } from "react-router-dom"
 

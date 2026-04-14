@@ -1,8 +1,19 @@
-import { createContext, useContext, useState, type FC, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type FC, type ReactNode } from "react";
 
 type SidebarContextType = {
     isOpen: boolean;
     toggleSidebar: () => void;
+    closeSidebar: () => void;
+};
+
+const MOBILE_BREAKPOINT = 640;
+
+const getInitialSidebarState = () => {
+    if(typeof window === "undefined") {
+        return true;
+    }
+
+    return window.innerWidth >= MOBILE_BREAKPOINT;
 };
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -16,15 +27,29 @@ export const useSidebar = () => {
 };
 
 export const SidebarProvider: FC<{children: ReactNode}> = ({children}) => {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(getInitialSidebarState);
 
-    const toggleSidebar = () => {
+    const toggleSidebar = useCallback(() => {
         setIsOpen((prev) => !prev);
-        // setIsOpen(!isOpen);
-    };
+    }, []);
+
+    const closeSidebar = useCallback(() => {
+        setIsOpen(false);
+    }, []);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsOpen(window.innerWidth >= MOBILE_BREAKPOINT);
+        };
+
+        handleResize();
+        window.addEventListener("resize", handleResize);
+
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     return (
-        <SidebarContext.Provider value={{ isOpen, toggleSidebar}}>
+        <SidebarContext.Provider value={{ isOpen, toggleSidebar, closeSidebar }}>
             {children}
         </SidebarContext.Provider>
     );

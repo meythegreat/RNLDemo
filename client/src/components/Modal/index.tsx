@@ -1,4 +1,4 @@
-import { useEffect, useRef, type FC, type ReactNode } from "react";
+import { useEffect, type FC, type ReactNode } from "react";
 import ModalCloseButton from "../Button/ModalCloseButton";
 
 interface ModalProps {
@@ -11,8 +11,6 @@ interface ModalProps {
 }
 
 const Modal: FC<ModalProps> = ({ isOpen, onClose, className, children, showCloseButton, isFullScreen }) => {
-    const modalRef = useRef<HTMLDivElement>(null);
-
     const handleEscape = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
             onClose();
@@ -47,11 +45,11 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose, className, children, showClose
 
     return (
         <>
-        <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-1000000 p-4">
+        <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-[1000] p-4">
             {!isFullScreen && (
-                <div className="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-lg" />
+                <div className="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-lg" onClick={onClose} />
             )}
-            <div ref={modalRef} className={` ${contentClasses} ${className}`} onClick={(e) => e.stopPropagation}>
+            <div className={` ${contentClasses} ${className}`} onClick={(e) => e.stopPropagation()}>
                 {showCloseButton && (
                     <ModalCloseButton onClose={onClose} />
                 )}

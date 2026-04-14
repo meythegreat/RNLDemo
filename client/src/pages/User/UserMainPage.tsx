@@ -1,6 +1,7 @@
 import { useModal } from "../../hooks/useModal";
 import { useRefresh } from "../../hooks/useRefresh";
 import { useToastMessage } from "../../hooks/useToastMessage";
+import ToastMessage from "../../components/ToastMessage/ToastMessage";
 import AddUserFormModal from "./components/AddUserFormModal";
 import DeleteUserFormModal from "./components/DeleteUserFormModal";
 import EditUserFormModal from "./components/EditUserFormModal";
@@ -13,17 +14,27 @@ const UserMainPage = () => {
 
     const {isOpen: isDeleteUserFormModalOpen, selectedUser: selectedUserForDelete, openModal: openDeleteUserFormModal, closeModal: closeDeleteUserFormModal} = useModal(false);
     
-    const {message: toastMessage, isVisible: toastMessageIsVisible, showToastMessage, closeToastMessage} = useToastMessage('', false);
+    const {
+        message: toastMessage,
+        isFailed: toastMessageIsFailed,
+        isVisible: toastMessageIsVisible,
+        showToastMessage,
+        closeToastMessage
+    } = useToastMessage('', false, false);
     
     const {refresh, handleRefresh} = useRefresh(false);
 
   return (
     <>
+        <ToastMessage
+            message={toastMessage}
+            isFailed={toastMessageIsFailed}
+            isVisible={toastMessageIsVisible}
+            onClose={closeToastMessage}
+            className="fixed top-6 right-6"
+        />
         <AddUserFormModal
             onUserAdded={showToastMessage}
-            toastMessage={toastMessage}
-            toastMessageIsVisible={toastMessageIsVisible}
-            onCloseToastMessage={closeToastMessage}
             isOpen={isAddUserFormModalOpen}
             onClose={closeAddUserFormModal}
             refreshKey={handleRefresh}
@@ -40,8 +51,8 @@ const UserMainPage = () => {
           onUserDeleted={showToastMessage}
           refreshKey={handleRefresh}
           isOpen={isDeleteUserFormModalOpen}
-          onClose={closeDeleteUserFormModal} /
-        >
+          onClose={closeDeleteUserFormModal}
+        />
         <UserList 
             onAddUser={openAddUserFormModal} 
             onEditUser={(user) => openEditUserFormModal(user)}

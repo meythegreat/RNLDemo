@@ -13,7 +13,13 @@ interface DeleteUserFormModalProps {
     onClose: () => void
 }
 
-const DeleteUserFormModal: FC<DeleteUserFormModalProps> = ({user, onUserDeleted, refreshKey, isOpen, onClose}) => {
+const DeleteUserFormModal: FC<DeleteUserFormModalProps> = ({
+    user,
+    onUserDeleted,
+    refreshKey,
+    isOpen,
+    onClose
+}) => {
     const [loadingDestroy, setLoadingDestroy] = useState(false);
         const [firstName, setFirstName] = useState('');
         const [middleName, setMiddleName] = useState('');

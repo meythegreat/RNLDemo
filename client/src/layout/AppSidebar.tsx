@@ -2,11 +2,11 @@ import { useSidebar } from "../contexts/SidebarContext";
 import { Link } from "react-router-dom"; 
 
 const AppSidebar = () => {
-   const {isOpen, toggleSidebar} = useSidebar();
+   const {isOpen, closeSidebar} = useSidebar();
 
    const sidebarItems = [
       {
-         path: "/",
+         path: "/genders",
          text: "Genders",
       },
       {
@@ -18,7 +18,7 @@ const AppSidebar = () => {
   return (
     <>
     {isOpen && (
-      <div className="fixed inset-0 z-30 blur-lg sm:hidden bg-gray-900/50" onClick={toggleSidebar}/>
+      <div className="fixed inset-0 z-30 blur-lg sm:hidden bg-gray-900/50" onClick={closeSidebar}/>
     )}
     
     {/* Fixed: Changed to -translate-x-full for the closed state so it pops from the left */}
@@ -27,7 +27,7 @@ const AppSidebar = () => {
           <ul className="space-y-2 font-medium">
             {sidebarItems.map((sidebarItem, index) => (
             <li key={index}>
-                <Link to={sidebarItem.path} className="flex items-center px-2 py-1.5 text-gray-200 rounded-base hover:bg-gray-700 hover:text-white group">
+                <Link to={sidebarItem.path} onClick={closeSidebar} className="flex items-center px-2 py-1.5 text-gray-200 rounded-base hover:bg-gray-700 hover:text-white group">
                   <span className="ms-3">{sidebarItem.text}</span>
                 </Link>
             </li>
