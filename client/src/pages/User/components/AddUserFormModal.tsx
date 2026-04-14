@@ -9,8 +9,6 @@ import GenderService from "../../../services/GenderService";
 import UserService from "../../../services/UserService";
 import type { UserFieldErrors } from "../../../interfaces/UserInterface";
 import type { GenderColumns } from "../../../interfaces/GenderInterface";
-import ToastMessage from "../../../components/ToastMessage/ToastMessage";
-import { useToastMessage } from "../../../hooks/useToastMessage";
 
 interface AddUserFormModalProps {
     onUserAdded?: (message: string, failed?: boolean) => void;
@@ -27,13 +25,6 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
 }) => {
     const [loadingGenders, setLoadingGenders] = useState(false);
     const [genders, setGenders] = useState<GenderColumns[]>([]);
-
-    const {
-        message,
-        isVisible,
-        showToastMessage,
-        closeToastMessage
-    } = useToastMessage('', false);
 
     const [loadingStore, setLoadingStore] = useState(false);
     const [firstName, setFirstName] = useState('');
@@ -68,7 +59,6 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
             const res = await UserService.storeUser(payload)
 
             if(res.status === 200) {
-                showToastMessage(res.data.message);
                 onUserAdded?.(res.data.message);
                 refreshKey();
 
@@ -84,6 +74,7 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
                 setErrors({});
 
                 handleLoadGenders();
+                onClose();
             } else {
                 console.error('Unexpected status error occurred during adding user: ', res.status)
             }
@@ -125,11 +116,6 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
   return (
     <>
     <Modal isOpen={isOpen} onClose={onClose} showCloseButton>
-        <ToastMessage
-        message={message}
-        isVisible={isVisible}
-        onClose={closeToastMessage}
-        />
         <form onSubmit={handleStoreUser}>
             <h1 className="text-2xl border-b border-gray-200 p-4 font-semibold mb-4 text-gray-800">
                 Add User
