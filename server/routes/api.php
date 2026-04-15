@@ -10,6 +10,10 @@ Route::controller(AuthController::class)->prefix('/auth')->group(function() {
     Route::post('/login', 'login');
 });
 
+Route::get('/user/profile-picture/{user}', [UserController::class, 'showProfilePicture'])
+    ->middleware('signed')
+    ->name('user.profile-picture');
+
 Route::middleware('auth:sanctum')->group(function() {
     Route::controller(AuthController::class)->prefix('/auth')->group(function() {
         Route::get('/me', 'me');

@@ -5,16 +5,19 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function loadUsers(Request $request) {
-        $search = trim((string) $request->input('search', ''));
-        $searchTerms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY);
+    public function loadUsers(Request $request)
+    {
+        $search = $request->input('search');
 
         $users = User::with(['gender'])
-            ->select('tbl_users.*')
             ->leftJoin('tbl_genders', 'tbl_users.gender_id', '=', 'tbl_genders.gender_id')
             ->where('tbl_users.is_deleted', false)
             ->orderBy('tbl_users.last_name', 'asc')
@@ -22,37 +25,33 @@ class UserController extends Controller
             ->orderBy('tbl_users.middle_name', 'asc')
             ->orderBy('tbl_users.suffix_name', 'asc');
 
-            if(!empty($searchTerms)) {
-                $users->where(function ($user) use ($search, $searchTerms) {
-                    $user->whereRaw(
-                        "TRIM(CONCAT_WS(' ', tbl_users.first_name, tbl_users.middle_name, tbl_users.last_name, tbl_users.suffix_name)) like ?",
-                        ["%{$search}%"]
-                    )->orWhereRaw(
-                        "TRIM(CONCAT_WS(' ', tbl_users.last_name, tbl_users.first_name, tbl_users.middle_name, tbl_users.suffix_name)) like ?",
-                        ["%{$search}%"]
-                    )->orWhere('tbl_genders.gender', 'like', "%{$search}%");
-
-                    foreach($searchTerms as $term) {
-                        $user->orWhere(function ($termQuery) use ($term) {
-                            $termQuery->where('tbl_users.first_name', 'like', "{$term}%")
-                                ->orWhere('tbl_users.middle_name', 'like', "{$term}%")
-                                ->orWhere('tbl_users.last_name', 'like', "{$term}%")
-                                ->orWhere('tbl_users.suffix_name', 'like', "{$term}%");
-                        });
-                    }
-                });
-            }
+        if ($search) {
+            $users->where(function ($user) use ($search) {
+                $user->where('tbl_users.first_name', 'like', "%{$search}%")
+                    ->orWhere('tbl_users.middle_name', 'like', "%{$search}%")
+                    ->orWhere('tbl_users.last_name', 'like', "%{$search}%")
+                    ->orWhere('tbl_users.suffix_name', 'like', "%{$search}%")
+                    ->orWhere('tbl_genders.gender', 'like', "%{$search}%");
+            });
+        }
 
         $users = $users->paginate(15);
+
+        $users->getCollection()->transform(function ($user) {
+            $user->profile_picture = $this->profilePictureUrl($user);
+
+            return $user;
+        });
 
         return response()->json([
             'users' => $users
         ], 200);
     }
 
-
-    public function storeUser(Request $request) {
+    public function storeUser(Request $request)
+    {
         $validated = $request->validate([
+            'add_user_profile_picture' => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
             'first_name' => ['required', 'max:55'],
             'middle_name' => ['nullable', 'max:55'],
             'last_name' => ['required', 'max:55'],
@@ -64,9 +63,16 @@ class UserController extends Controller
             'password_confirmation' => ['required', 'min:6', 'max:12']
         ]);
 
+        if ($request->hasFile('add_user_profile_picture')) {
+            $validated['add_user_profile_picture'] = $this->storeProfilePicture(
+                $request->file('add_user_profile_picture')
+            );
+        }
+
         $age = date_diff(date_create($validated['birth_date']), date_create('now'))->y;
 
         User::create([
+            'profile_picture' => $validated['add_user_profile_picture'] ?? null,
             'first_name' => $validated['first_name'],
             'middle_name' => $validated['middle_name'],
             'last_name' => $validated['last_name'],
@@ -83,8 +89,10 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function updateUser(Request $request, User $user) {
+    public function updateUser(Request $request, User $user)
+    {
         $validated = $request->validate([
+            'edit_user_profile_picture' => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
             'first_name' => ['required', 'max:55'],
             'middle_name' => ['nullable', 'max:55'],
             'last_name' => ['required', 'max:55'],
@@ -94,9 +102,20 @@ class UserController extends Controller
             'username' => ['required', 'min:6', 'max:12', Rule::unique('tbl_users', 'username')->ignore($user)]
         ]);
 
+        if ($request->has('remove_profile_picture') && $request->remove_profile_picture == '1') {
+            $this->deleteProfilePicture($user->profile_picture);
+            $user->profile_picture = null;
+        } else if ($request->hasFile('edit_user_profile_picture')) {
+            $this->deleteProfilePicture($user->profile_picture);
+            $validated['edit_user_profile_picture'] = $this->storeProfilePicture(
+                $request->file('edit_user_profile_picture')
+            );
+        }
+
         $age = date_diff(date_create($validated['birth_date']), date_create('now'))->y;
 
         $user->update([
+            'profile_picture' => $validated['edit_user_profile_picture'] ?? $user->profile_picture,
             'first_name' => $validated['first_name'],
             'middle_name' => $validated['middle_name'],
             'last_name' => $validated['last_name'],
@@ -107,19 +126,100 @@ class UserController extends Controller
             'username' => $validated['username']
         ]);
 
+        $user->profile_picture = $this->profilePictureUrl($user);
+
         return response()->json([
             'message' => 'User successfully updated.',
             'user' => $user
         ], 200);
     }
 
-    public function destroyUser(User $user) {
+    public function showProfilePicture(Request $request, User $user)
+    {
+        if (! $user->profile_picture) {
+            abort(404);
+        }
+
+        $profilePicturePath = $this->resolveProfilePicturePath($user->profile_picture);
+
+        if (! $profilePicturePath) {
+            abort(404);
+        }
+
+        return response()->file($profilePicturePath, [
+            'Cache-Control' => 'private, max-age=1800',
+            'Content-Type' => File::mimeType($profilePicturePath) ?: 'application/octet-stream',
+        ]);
+    }
+
+    public function destroyUser(User $user)
+    {
         $user->update([
             'is_deleted' => true
         ]);
 
         return response()->json([
-            'message' => 'User successfully deleted.'
+            'message' => 'User Successfully Deleted.'
         ], 200);
+    }
+
+    private function profilePictureUrl(User $user): ?string
+    {
+        if (! $user->profile_picture || ! $this->resolveProfilePicturePath($user->profile_picture)) {
+            return null;
+        }
+
+        return URL::temporarySignedRoute(
+            'user.profile-picture',
+            now()->addMinutes(30),
+            ['user' => $user->user_id]
+        );
+    }
+
+    private function storeProfilePicture(UploadedFile $uploadedFile): string
+    {
+        $extension = $uploadedFile->getClientOriginalExtension();
+        $filenameToStore = sha1(Str::uuid()->toString() . microtime(true) . random_bytes(20)) . ($extension ? '.'.$extension : '');
+        $privateUploadPath = storage_path('app/private/img/user/profile_picture');
+
+        File::ensureDirectoryExists($privateUploadPath);
+        $uploadedFile->move($privateUploadPath, $filenameToStore);
+
+        return $filenameToStore;
+    }
+
+    private function deleteProfilePicture(?string $filename): void
+    {
+        if (! $filename) {
+            return;
+        }
+
+        $privatePath = storage_path('app/private/img/user/profile_picture/' . $filename);
+        $publicPath = storage_path('app/public/img/user/profile_picture/' . $filename);
+
+        if (File::exists($privatePath)) {
+            File::delete($privatePath);
+        }
+
+        if (File::exists($publicPath)) {
+            File::delete($publicPath);
+        }
+    }
+
+    private function resolveProfilePicturePath(string $filename): ?string
+    {
+        $privatePath = storage_path('app/private/img/user/profile_picture/' . $filename);
+
+        if (File::exists($privatePath)) {
+            return $privatePath;
+        }
+
+        $publicPath = storage_path('app/public/img/user/profile_picture/' . $filename);
+
+        if (File::exists($publicPath)) {
+            return $publicPath;
+        }
+
+        return null;
     }
 }
