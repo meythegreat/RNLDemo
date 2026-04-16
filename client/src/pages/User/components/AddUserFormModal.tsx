@@ -1,5 +1,4 @@
 import { useEffect, useState, type FC, type FormEvent } from "react";
-import { isAxiosError } from "axios";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 import Modal from "../../../components/Modal";
 import FloatingLabelSelect from "../../../components/Select/FloatingLabelSelect";
@@ -86,11 +85,13 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
             } else {
                 console.error('Unexpected status error occurred during adding user: ', res.status)
             }
-        } catch(error: unknown) {
-            if(isAxiosError(error) && error.response?.status === 422) {
-                setErrors(error.response.data.errors as UserFieldErrors)
+        } catch (error: any) {
+            // Check if the error is a Laravel validation error (422)
+            if (error.response && error.response.status === 422) {
+                // Grab the specific field errors and put them in your React state
+                setErrors(error.response.data.errors);
             } else {
-                console.log('Unexpected server error occurred during adding user: ', error)
+                console.error("Something else went wrong:", error);
             }
         } finally {
             setLoadingStore(false)
@@ -129,22 +130,22 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
                 Add User
             </h1>
             <div className="mb-4">
-                <UploadInput label="Profile Picture" name="add_user_profile_picture" value={addUserProfilePicture} onChange={setAddUserProfilePicture} errors={errors.add_user_profile_picture} />
+                <UploadInput label="Profile Picture" name="add_user_profile_picture" value={addUserProfilePicture} onChange={setAddUserProfilePicture} errors={errors?.add_user_profile_picture} />
             </div>
             
             <div className="grid grid-cols-2 gap-4 border-b border-gray-200 mb-4 px-4 pb-2">
                 <div className="col-span-2 md:col-span-1">
                     <div className="mb-4">
-                        <FloatingLabelInput label="First Name" type="text" name="first_name" value={firstName} onChange={(e) => setFirstName(e.target.value)} errors={errors.first_name} required autoFocus />
+                        <FloatingLabelInput label="First Name" type="text" name="first_name" value={firstName} onChange={(e) => setFirstName(e.target.value)} errors={errors?.first_name} required autoFocus />
                     </div>
                     <div className="mb-4">
-                        <FloatingLabelInput label="Middle Name" type="text" name="middle_name" value={middleName} onChange={(e) => setMiddleName(e.target.value)} errors={errors.middle_name} />
+                        <FloatingLabelInput label="Middle Name" type="text" name="middle_name" value={middleName} onChange={(e) => setMiddleName(e.target.value)} errors={errors?.middle_name} />
                     </div>
                     <div className="mb-4">
-                        <FloatingLabelInput label="Last Name" type="text" name="last_name" value={lastName} onChange={(e) => setLastName(e.target.value)} errors={errors.last_name} required />
+                        <FloatingLabelInput label="Last Name" type="text" name="last_name" value={lastName} onChange={(e) => setLastName(e.target.value)} errors={errors?.last_name} required />
                     </div>
                     <div className="mb-4">
-                        <FloatingLabelInput label="Suffix Name" type="text" name="suffix_name" value={suffixName} onChange={(e) => setSuffixName(e.target.value)} errors={errors.suffix_name} />
+                        <FloatingLabelInput label="Suffix Name" type="text" name="suffix_name" value={suffixName} onChange={(e) => setSuffixName(e.target.value)} errors={errors?.suffix_name} />
                     </div>
                     <div className="mb-4">
                         <FloatingLabelSelect
@@ -153,7 +154,7 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
                         value={gender}
                         onChange={(e) => setGender(e.target.value)}
                         required
-                        errors={errors.gender}
+                        errors={errors?.gender}
                         >
                         {loadingGenders ? (
                             <option value="">Loading...</option>
@@ -173,16 +174,16 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({
                 
                 <div className="col-span-2 md:col-span-1">
                     <div className="mb-4">
-                        <FloatingLabelInput label="Birth Date" type="date" name="birth_date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} errors={errors.birth_date} required/>
+                        <FloatingLabelInput label="Birth Date" type="date" name="birth_date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} errors={errors?.birth_date} required/>
                     </div>
                     <div className="mb-4">
-                        <FloatingLabelInput label="Username" type="text" name="username" value={username} onChange={(e) => setUsername(e.target.value)} errors={errors.username} required />
+                        <FloatingLabelInput label="Username" type="text" name="username" value={username} onChange={(e) => setUsername(e.target.value)} errors={errors?.username} required />
                     </div>
                     <div className="mb-4">
-                        <FloatingLabelInput label="Password" type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} errors={errors.password} required />
+                        <FloatingLabelInput label="Password" type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} errors={errors?.password} required />
                     </div>
                     <div className="mb-4">
-                        <FloatingLabelInput label="Confirm Password" type="password" name="password_confirmation" value={passwordConfirmation} onChange={(e) => setPasswordConfirmation(e.target.value)} errors={errors.password_confirmation} required />
+                        <FloatingLabelInput label="Confirm Password" type="password" name="password_confirmation" value={passwordConfirmation} onChange={(e) => setPasswordConfirmation(e.target.value)} errors={errors?.password_confirmation} required />
                     </div>
                 </div>
             </div>

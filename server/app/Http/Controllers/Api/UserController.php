@@ -107,7 +107,9 @@ class UserController extends Controller
             $user->profile_picture = null;
         } else if ($request->hasFile('edit_user_profile_picture')) {
             $this->deleteProfilePicture($user->profile_picture);
-            $validated['edit_user_profile_picture'] = $this->storeProfilePicture(
+            
+            // Assign the new path DIRECTLY to the user model's profile_picture property
+            $user->profile_picture = $this->storeProfilePicture(
                 $request->file('edit_user_profile_picture')
             );
         }
