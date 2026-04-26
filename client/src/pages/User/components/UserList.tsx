@@ -53,7 +53,9 @@ const UserList: FC<UserListProps> = ({
           usersTableLastPage ||
           1;
 
-        setUsers(append ? [...users, ...usersData] : usersData);
+        setUsers((prevUsers) =>
+          append ? [...prevUsers, ...usersData] : usersData
+        );
         setUsersTableCurrentPage(page);
         setUsersTableLastPage(lastPage);
         setHasMore(page < lastPage);
@@ -209,9 +211,9 @@ const UserList: FC<UserListProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-gray-100 text-gray-500 text-sm">
-              {users.length ?? 0 > 0 ? (
+              {(users.length ?? 0) > 0 ? (
                 users.map((user, index) => (
-                  <TableRow className="hover:bg-gray-100" key={index}>
+                  <TableRow className="hover:bg-gray-100" key={user.user_id}>
                     <TableCell className="px-4 py-3 text-center">
                       {index + 1}
                     </TableCell>
